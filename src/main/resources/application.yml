@@ -50,7 +50,7 @@ management:
 spring:
   config:
     activate:
-      on-profile: postgres
+      on-profile: production
   datasource:
     url: jdbc:postgresql://postgres:5432/rewardo
     driverClassName: org.postgresql.Driver
@@ -61,3 +61,8 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: false
+
+# API client configuration
+api:
+  client:
+    use-proxy: true

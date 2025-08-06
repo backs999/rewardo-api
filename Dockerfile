@@ -6,4 +6,4 @@ COPY rewardo-api.jar /app/
 
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-jar", "-Dspring.profiles.active=postgres", "rewardo-api.jar"]
+ENTRYPOINT ["java", "-jar", "-Dspring.profiles.active=production", "rewardo-api.jar"]
