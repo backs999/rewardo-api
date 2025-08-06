@@ -1,0 +1,63 @@
+spring:
+  application:
+    name: reward-api
+  h2:
+    console:
+      enabled: true
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driverClassName: org.h2.Driver
+    username: sa
+    password: password
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+  cache:
+    cache-names: routes
+    caffeine:
+      spec: maximumSize=100,expireAfterWrite=3600s
+
+# API configuration
+routes:
+  cache:
+    refresh-rate: 3600000  # 1 hour in milliseconds
+
+# Scraper configuration
+scraper:
+  vs:
+    refresh-rate: 3600000  # 1 hour in milliseconds
+    
+# OpenAPI/Swagger configuration
+springdoc:
+  swagger-ui:
+    operationsSorter: method
+    tagsSorter: alpha
+  packages-to-scan: travel.rewardo.rewardapi
+  paths-to-match: /api/**
+
+# Actuator configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+
+---
+spring:
+  config:
+    activate:
+      on-profile: postgres
+  datasource:
+    url: jdbc:postgresql://postgres:5432/rewardo
+    driverClassName: org.postgresql.Driver
+    username: rewardo
+    password: rewardo
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: false

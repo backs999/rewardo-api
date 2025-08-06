@@ -1,0 +1,356 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Rewardo API",
+    "description": "API for accessing reward flight information",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Rewardo Team",
+      "email": "support@rewardo.travel"
+    },
+    "license": {
+      "name": "Proprietary",
+      "url": "https://rewardo.travel"
+    }
+  },
+  "servers": [
+    {
+      "url": "/",
+      "description": "Default Server URL"
+    }
+  ],
+  "tags": [
+    {
+      "name": "reward-flight-controller",
+      "description": "Reward Flight Controller"
+    },
+    {
+      "name": "streaming-controller",
+      "description": "Streaming Controller"
+    }
+  ],
+  "paths": {
+    "/api/v1/airline/vs/reward-flights/origin/{origin}/destination/{destination}/from/{from}/to/{to}": {
+      "get": {
+        "tags": [
+          "reward-flight-controller"
+        ],
+        "summary": "Get latest reward flights",
+        "description": "Retrieves reward flights for a specific origin, destination, and date range",
+        "operationId": "latestRewardFlights",
+        "parameters": [
+          {
+            "name": "origin",
+            "in": "path",
+            "description": "Origin airport code",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "destination",
+            "in": "path",
+            "description": "Destination airport code",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "in": "path",
+            "description": "Start date (YYYY-MM-DD)",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "to",
+            "in": "path",
+            "description": "End date (YYYY-MM-DD)",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "page-number",
+            "in": "query",
+            "description": "Page number",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "page-size",
+            "in": "query",
+            "description": "Page size",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageRewardFlightLatest"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/airline/vs/reward-flights/origin/{origin}/destination/{destination}/cabin/{cabinType}/cheapest": {
+      "get": {
+        "tags": [
+          "reward-flight-controller"
+        ],
+        "summary": "Get cheapest reward flights",
+        "description": "Retrieves the cheapest reward flights for a specific origin, destination, and cabin type",
+        "operationId": "cheapest",
+        "parameters": [
+          {
+            "name": "origin",
+            "in": "path",
+            "description": "Origin airport code",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "destination",
+            "in": "path",
+            "description": "Destination airport code",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cabinType",
+            "in": "path",
+            "description": "Cabin type",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/CabinType"
+            }
+          },
+          {
+            "name": "page-number",
+            "in": "query",
+            "description": "Page number",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "page-size",
+            "in": "query",
+            "description": "Page size",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 50
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageRewardFlightLatest"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/price-changes/airlines": {
+      "get": {
+        "tags": [
+          "streaming-controller"
+        ],
+        "summary": "Stream price change events",
+        "description": "Streams price change events for reward flights",
+        "operationId": "streamEvents",
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CabinType": {
+        "type": "string",
+        "enum": [
+          "ECONOMY",
+          "PREMIUM_ECONOMY",
+          "BUSINESS",
+          "FIRST"
+        ]
+      },
+      "PageRewardFlightLatest": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RewardFlightLatest"
+            }
+          },
+          "pageable": {
+            "type": "object"
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "last": {
+            "type": "boolean"
+          },
+          "size": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "number": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sort": {
+            "type": "object"
+          },
+          "numberOfElements": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "first": {
+            "type": "boolean"
+          },
+          "empty": {
+            "type": "boolean"
+          }
+        }
+      },
+      "RewardFlightLatest": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "origin": {
+            "type": "string"
+          },
+          "destination": {
+            "type": "string"
+          },
+          "carrierCode": {
+            "type": "string"
+          },
+          "departure": {
+            "type": "string",
+            "format": "date"
+          },
+          "awardEconomy": {
+            "$ref": "#/components/schemas/AwardEconomy"
+          },
+          "awardPremiumEconomy": {
+            "$ref": "#/components/schemas/AwardPremiumEconomy"
+          },
+          "awardBusiness": {
+            "$ref": "#/components/schemas/AwardBusiness"
+          },
+          "awardFirst": {
+            "$ref": "#/components/schemas/AwardFirst"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "AwardEconomy": {
+        "type": "object",
+        "properties": {
+          "cabinPointsValue": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "available": {
+            "type": "boolean"
+          }
+        }
+      },
+      "AwardPremiumEconomy": {
+        "type": "object",
+        "properties": {
+          "cabinPointsValue": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "available": {
+            "type": "boolean"
+          }
+        }
+      },
+      "AwardBusiness": {
+        "type": "object",
+        "properties": {
+          "cabinPointsValue": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "available": {
+            "type": "boolean"
+          }
+        }
+      },
+      "AwardFirst": {
+        "type": "object",
+        "properties": {
+          "cabinPointsValue": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "available": {
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  }
+}
