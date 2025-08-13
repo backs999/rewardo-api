@@ -86,75 +86,6 @@ public class SearchDataController {
 
         return ResponseEntity.ok(flightStats);
     }
-
-    /**
-     * Returns routes with the most changes for Virgin Atlantic with pagination support.
-     * The response format matches the example in the requirements:
-     * 
-     * LHR → JFK VS 42 changes
-     * LAX → SYD VS 36 changes
-     * etc.
-     * 
-     * @param page Page number (0-based)
-     * @param size Number of items per page
-     * @return List of routes with the most changes
-     */
-    @GetMapping("/routes/most-changes")
-    public ResponseEntity<Map<String, Object>> getRoutesMostChanges(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        
-        Map<String, Object> response = new HashMap<>();
-        
-        // Create pageable object for pagination
-        Pageable pageable = PageRequest.of(page, size);
-        
-        // Get all historic reward flights for Virgin Atlantic
-        List<RewardFlightLatestHistoric> historicRewardFlights = 
-            StreamSupport.stream(rewardFlightLatestHistoricRepository.findAll().spliterator(), false)
-                .toList();
-        
-        // Count changes by origin-destination pair
-        Map<String, Long> changesByRoute = historicRewardFlights.stream()
-            .collect(Collectors.groupingBy(
-                flight -> flight.getOrigin() + "-" + flight.getDestination(),
-                Collectors.counting()
-            ));
-        
-        // Convert to list of route objects for sorting and pagination
-        List<Map<String, Object>> routesList = changesByRoute.entrySet().stream()
-            .map(entry -> {
-                Map<String, Object> route = new HashMap<>();
-                String[] parts = entry.getKey().split("-");
-                route.put("origin", parts[0]);
-                route.put("destination", parts[1]);
-                route.put("airline", "VS"); // Virgin Atlantic
-                route.put("changes", entry.getValue());
-                
-                // Add formatted display string matching the example
-                route.put("display", String.format("%s\n→\n%s\nVS\n%d changes", 
-                    parts[0], parts[1], entry.getValue()));
-                
-                return route;
-            })
-            .sorted((r1, r2) -> ((Long)r2.get("changes")).compareTo((Long)r1.get("changes")))
-            .collect(Collectors.toList());
-        
-        // Apply pagination
-        int start = (int)pageable.getOffset();
-        int end = Math.min((start + pageable.getPageSize()), routesList.size());
-        
-        List<Map<String, Object>> pageContent = 
-            start < end ? routesList.subList(start, end) : new ArrayList<>();
-        
-        // Build response
-        response.put("routes", pageContent);
-        response.put("currentPage", page);
-        response.put("totalItems", routesList.size());
-        response.put("totalPages", (int) Math.ceil((double) routesList.size() / size));
-        
-        return ResponseEntity.ok(response);
-    }
     
     /**
      * Returns the most common origin-destination pairs for the past 30 days
@@ -165,7 +96,7 @@ public class SearchDataController {
      * @param size Number of items per page
      * @return List of origin-destination pairs with counts
      */
-    @GetMapping("/routes/most-common-pairs")
+    @GetMapping("/routes/most-changes")
     public ResponseEntity<Map<String, Object>> getMostCommonOriginDestinationPairs(
             @RequestParam(required = false) String carrierCode,
             @RequestParam(defaultValue = "0") int page,
@@ -206,7 +137,7 @@ public class SearchDataController {
                 }
                 
                 // Add formatted display string
-                String displayFormat = "%s → %s (%d pairs)";
+                String displayFormat = "%s → %s (%d changes)";
                 formattedPair.put("display", String.format(displayFormat, 
                     pair.get("origin"), pair.get("destination"), pair.get("count")));
                 
